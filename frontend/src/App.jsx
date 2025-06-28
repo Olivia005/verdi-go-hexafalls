@@ -9,6 +9,7 @@ import AirBuddy from './pages/AirBuddy'
 import GreenLane from './pages/GreenLane'
 import LocalHarvest from './pages/LocalHarvest'
 import WasteLess from './pages/WasteLess'
+import CarbonFootprintCalculator from './pages/CarbonFootprintCalculator'
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
         <Route path='/dashboard/local-harvest' element={<LocalHarvest />} />
         <Route path='/dashboard/air-buddy' element={<AirBuddy />} />
         <Route path='/dashboard/waste-less' element={<WasteLess />} />
+        <Route path="/dashboard/carbon-footprint-calculator" element={<CarbonFootprintCalculator />} />
       </Routes>
     </BrowserRouter>
     </AuthProvider>

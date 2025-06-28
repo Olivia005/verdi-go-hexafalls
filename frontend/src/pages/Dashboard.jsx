@@ -177,7 +177,8 @@ import {
   Droplets,
   Sun,
   Moon,
-  GlobeLock
+  GlobeLock,
+  Calculator
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import WeatherCard from '@/components/weatherCard'
@@ -201,7 +202,7 @@ const Dashboard = () => {
       color: 'from-emerald-400 to-emerald-600',
       comingSoon: true,
       stats: '0 routes planned',
-      link:'/green-lane'
+      link:'/dashboard/green-lane'
     },
     {
       title: 'Local Harvest',
@@ -210,7 +211,7 @@ const Dashboard = () => {
       color: 'from-green-400 to-green-600',
       comingSoon: true,
       stats: '12 farms nearby',
-      link:'/local-harvest'
+      link:'/dashboard/local-harvest'
     },
     {
       title: 'Air Buddy',
@@ -219,7 +220,7 @@ const Dashboard = () => {
       color: 'from-blue-400 to-blue-600',
       comingSoon: true,
       stats: 'AQI: Good (45)',
-      link:'/air-buddy'
+      link:'/dashboard/air-buddy'
     },
     {
       title: 'WasteLess',
@@ -228,14 +229,25 @@ const Dashboard = () => {
       color: 'from-teal-400 to-teal-600',
       comingSoon: true,
       stats: '15% reduction',
-      link:'/waste-less'
+      link:'https://trash-vision-classify-it.vercel.app/'
+    },
+    {
+      title: 'Carbon Footprint Calculator',
+      description: 'Track and reduce your environmental footprint',
+      icon: <Calculator className='w-8 h-8 text-white' />,
+      color: 'from-teal-400 to-teal-600',
+      comingSoon: true,
+      stats: '15% reduction',
+      link:'/dashboard/carbon-footprint-calculator'
     }
+
+
   ]
 
   const quickStats = [
     {
       title: 'Carbon Saved',
-      value: '0 kg',
+      value: '30 kg',
       change: '+0%',
       icon: <TreePine className='w-6 h-6 text-green-600' />,
       color: 'bg-green-50 border-green-200'
@@ -249,7 +261,7 @@ const Dashboard = () => {
     },
     {
       title: 'Local Purchases',
-      value: '0',
+      value: '8',
       change: '+0%',
       icon: <ShoppingBasket className='w-6 h-6 text-blue-600' />,
       color: 'bg-blue-50 border-blue-200'
@@ -549,21 +561,9 @@ const Dashboard = () => {
                     description:
                       'Inspire others by sharing your sustainability progress',
                     completed: false
-                  },
-                  {
-                    step: 7,
-                    title: 'Discover Local Initiatives',
-                    description:
-                      'Find and support nearby green projects and events',
-                    completed: false
-                  },
-                  {
-                    step: 8,
-                    title: 'Level Up Your Lifestyle',
-                    description:
-                      'Get AI-powered suggestions to make everyday life more sustainable',
-                    completed: false
                   }
+                  
+                  
                 ].map((item, index) => (
                   <div key={index} className='flex items-start space-x-4'>
                     <div

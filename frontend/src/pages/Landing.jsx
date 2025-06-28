@@ -190,7 +190,7 @@ const LandingPage = () => {
             alt='Green living hero'
             className='w-full h-full object-cover'
           />
-          <div className='absolute inset-0 bg-gradient-to-r from-emerald-100/80 via-green-100/20 to-teal-400'></div>
+          <div className='absolute inset-0 bg-gradient-to-r from-emerald-100/40 via-green-100/50 to-teal-400'></div>
         </div>
         <div className='absolute inset-0 bg-gradient-to-r bg-green-600/20 z-10'></div>
         <div className='max-w-5xl mx-auto relative z-10'>
@@ -198,14 +198,14 @@ const LandingPage = () => {
             <StarsIcon className='w-4 h-4' />
             <span>Trusted by 50,000+ Eco-Warriors</span>
           </div>
-          <h2 className='text-6xl font-bold text-gray-950 mb-8 leading-tight'>
+          <h2 className='text-6xl font-bold text-gray-900 mb-8 leading-tight'>
             Your Complete{' '}
             <span className='text-transparent bg-clip-text bg-gradient-to-r bg-gray-50'>
               Eco-System
             </span>{' '}
             for Sustainable Living
           </h2>
-          <p className='text-xl font-lightbold text-gradient-to-r from-gray-950 via-white to-gray-800 mb-12 leading-relaxed max-w-4xl mx-auto '>
+          <p className='text-xl font-lightbold text-gradient-to-r from-gray-900 via-white to-gray-800 mb-12 leading-relaxed max-w-4xl mx-auto '>
             Transform your lifestyle with AI-powered tools that make sustainable
             living effortless, rewarding, and impactful. Join the green
             revolution today.
