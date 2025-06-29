@@ -1,269 +1,202 @@
-import React, { useState, useRef } from 'react'
-import { MessageCircle, X, Send, Leaf, Sparkles, Camera } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { MessageCircle, X, Send, Leaf, Sparkles } from 'lucide-react'
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
     {
       id: '1',
-      message:
-        "🌱 Hi there! I'm EcoBot, your intelligent green assistant. I can analyze images using AI and answer questions with ChatGPT! Upload a photo or ask me about VerdiGo's eco-features!",
+      message: "🌱 Hi there! I'm EcoBot, your friendly green assistant! Ask me about sustainability, VerdiGo's features, or anything else!",
       isBot: true,
       timestamp: new Date()
     }
   ])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const fileInputRef = useRef(null)
+  const messagesEndRef = useRef(null)
 
-  // Handle text messages with ChatGPT API
-  // Replace the handleSendMessage function with this improved version:
+  // Auto scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
 
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  // Handle sending messages
   const handleSendMessage = async () => {
     if (inputMessage.trim()) {
       const userMessage = {
         id: Date.now().toString(),
         message: inputMessage,
         isBot: false,
-        timestamp: new Date(),
-        type: 'text'
+        timestamp: new Date()
       }
 
       setMessages(prev => [...prev, userMessage])
+      const currentMessage = inputMessage
       setInputMessage('')
       setIsTyping(true)
 
-      try {
-        // 🎯 Try ChatGPT API first
-        console.log('🤖 Attempting ChatGPT API call...')
-        const response = await getChatGPTResponse(inputMessage)
-
-        const botResponse = {
+      // Simulate thinking time
+      setTimeout(() => {
+        const botResponse = getResponse(currentMessage)
+        const botMessage = {
           id: (Date.now() + 1).toString(),
-          message: response,
+          message: botResponse,
           isBot: true,
-          timestamp: new Date(),
-          type: 'text'
+          timestamp: new Date()
         }
-
-        setMessages(prev => [...prev, botResponse])
-        console.log('✅ ChatGPT API response received')
-      } catch (error) {
-        console.error('❌ ChatGPT API error:', error)
-        const getSpecificBotResponse = message => {
-          const lowerMessage = message.toLowerCase()
-
-          // Check for specific VerdiGo features
-          if (lowerMessage.includes('green lane')) {
-            return "🛣️ Green Lane is our revolutionary eco-smart navigation system! It analyzes traffic patterns, vehicle emissions, and route efficiency to suggest the most sustainable paths. You'll get real-time carbon footprint tracking, alternative transport suggestions, and even find eco-friendly stops along your route. It's like having a personal environmental consultant for every journey!"
-          } else if (lowerMessage.includes('local harvest')) {
-            return "🌾 Local Harvest connects you directly with local farmers and sustainable food producers! Through our interactive map, you can discover seasonal produce, schedule direct pickups, and even get community recipes. It's farm-to-table made simple, supporting your local economy while ensuring the freshest, most nutritious food for your family."
-          } else if (lowerMessage.includes('air buddy')) {
-            return '💨 Air Buddy is your personal air quality guardian! It provides hyper-local air quality monitoring with real-time AQI alerts, personalized outdoor activity recommendations, and even tracks pollen levels. Plus, we give you indoor air quality tips and suggest the best plants to purify your home environment.'
-          } else if (lowerMessage.includes('wasteless')) {
-            return "♻️ WasteLess transforms how you think about waste! Our intelligent tracking system categorizes your waste, provides recycling guidance, and connects you with local composting programs. You'll get personalized tips for sustainable alternatives and can join zero-waste challenges with our community."
-          } else if (
-            lowerMessage.includes('features') ||
-            lowerMessage.includes('what can')
-          ) {
-            return '✨ VerdiGo offers four powerful eco-tools: Green Lane for sustainable navigation, Local Harvest for farm-to-table connections, Air Buddy for air quality monitoring, and WasteLess for smart waste management. Each tool is designed to make sustainable living easier and more rewarding. Which one interests you most?'
-          } else if (
-            lowerMessage.includes('hello') ||
-            lowerMessage.includes('hi')
-          ) {
-            return "🌟 Hello! Welcome to VerdiGo's eco-community! I'm excited to help you discover how our platform can make sustainable living effortless and enjoyable. Feel free to ask me about any of our features, upload an image for AI analysis, or let me know what environmental challenges you're facing!"
-          } else if (
-            lowerMessage.includes('price') ||
-            lowerMessage.includes('cost')
-          ) {
-            return '💚 Great question! VerdiGo believes sustainability should be accessible to everyone. We offer flexible pricing plans to suit different needs. Sign up to explore our features and find the perfect plan for your eco-journey!'
-          }
-
-          // Return null if no specific match found
-          return null
-        }
-
-        // 🎯 Check for specific VerdiGo features first (before generic fallback)
-        const specificResponse = getSpecificBotResponse(inputMessage)
-        if (specificResponse) {
-          console.log('🎯 Using specific VerdiGo response')
-          const botResponse = {
-            id: (Date.now() + 1).toString(),
-            message: specificResponse,
-            isBot: true,
-            timestamp: new Date(),
-            type: 'text'
-          }
-          setMessages(prev => [...prev, botResponse])
-        } else {
-          console.log('🔄 Using generic fallback response')
-          const botResponse = {
-            id: (Date.now() + 1).toString(),
-            message: getBotResponse(inputMessage),
-            isBot: true,
-            timestamp: new Date(),
-            type: 'text'
-          }
-          setMessages(prev => [...prev, botResponse])
-        }
-      } finally {
+        setMessages(prev => [...prev, botMessage])
         setIsTyping(false)
-      }
+      }, 1000 + Math.random() * 2000) // Random delay 1-3 seconds
     }
   }
 
-  // Handle image upload and analysis
-  const handleImageUpload = async event => {
-    const file = event.target.files[0]
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload a valid image file')
-      return
-    }
-
-    const imageUrl = URL.createObjectURL(file)
-
-    const userMessage = {
-      id: Date.now().toString(),
-      message: "🖼️ I've uploaded an image for analysis",
-      isBot: false,
-      timestamp: new Date(),
-      type: 'image',
-      imageUrl: imageUrl,
-      fileName: file.name
-    }
-
-    setMessages(prev => [...prev, userMessage])
-    setIsAnalyzing(true)
-
-    try {
-      const analysisResult = await analyzeImageWithAI(file)
-
-      const botResponse = {
-        id: (Date.now() + 1).toString(),
-        message: formatImageAnalysisResponse(analysisResult),
-        isBot: true,
-        timestamp: new Date(),
-        type: 'analysis'
-      }
-
-      setMessages(prev => [...prev, botResponse])
-    } catch (error) {
-      console.error('Image analysis error:', error)
-      const errorResponse = {
-        id: (Date.now() + 1).toString(),
-        message:
-          "🤖 I'm having trouble analyzing this image right now. Could you try uploading it again?",
-        isBot: true,
-        timestamp: new Date(),
-        type: 'error'
-      }
-      setMessages(prev => [...prev, errorResponse])
-    } finally {
-      setIsAnalyzing(false)
-      URL.revokeObjectURL(imageUrl)
-    }
-
-    event.target.value = ''
-  }
-
-  // ChatGPT API call
-  const getChatGPTResponse = async message => {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: `As EcoBot, VerdiGo's AI assistant for sustainable living, respond to: "${message}". VerdiGo has Green Lane (eco-navigation), Local Harvest (farm connections), Air Buddy (air quality), and WasteLess (waste management). Be helpful and focus on sustainability.`,
-        max_tokens: 150
-      })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      if (errorData.fallback) {
-        throw new Error('Use fallback')
-      }
-      throw new Error('ChatGPT API failed')
-    }
-
-    const data = await response.json()
-    return data.response
-  }
-
-  // Image analysis with AI model
-  const analyzeImageWithAI = async imageFile => {
-    const formData = new FormData()
-    formData.append('image', imageFile)
-
-    const response = await fetch('/api/analyze-image', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (!response.ok) throw new Error('Image analysis failed')
-    return await response.json()
-  }
-
-  // Format analysis response
-  const formatImageAnalysisResponse = analysisResult => {
-    const { classifications, confidence, suggestions, status } = analysisResult
-
-    let response = `🔍 **AI Analysis Complete!**\n\n`
-
-    if (status === 'mock_analysis') {
-      response += `🔬 *Demo Analysis - Replace with your trained model*\n\n`
-    }
-
-    if (classifications && classifications.length > 0) {
-      response += `📊 **What I detected:**\n`
-      classifications.forEach((item, index) => {
-        response += `${index + 1}. **${item.label}** (${(
-          item.confidence * 100
-        ).toFixed(1)}% confidence)\n`
-      })
-      response += `\n`
-    }
-
-    if (suggestions && suggestions.length > 0) {
-      response += `💡 **Eco-friendly insights:**\n`
-      suggestions.forEach(suggestion => {
-        response += `• ${suggestion}\n`
-      })
-      response += `\n`
-    }
-
-    response += `❓ **Want to know more?** Ask me about any of these items or sustainable practices!`
-    return response
-  }
-
-  // Your existing fallback responses
-  const getBotResponse = message => {
+  // Generate responses based on user input
+  const getResponse = (message) => {
     const lowerMessage = message.toLowerCase()
 
+    // Greetings
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey') || lowerMessage.includes('good morning') || lowerMessage.includes('good afternoon')) {
+      const greetings = [
+        "🌟 Hello! Welcome to VerdiGo! How can I help you live more sustainably today?",
+        "👋 Hi there! Ready to explore some eco-friendly solutions?",
+        "🌱 Hey! Great to see you here. What would you like to know about sustainable living?",
+        "✨ Hello! I'm excited to help you on your green journey!"
+      ]
+      return greetings[Math.floor(Math.random() * greetings.length)]
+    }
+
+    // VerdiGo Features
     if (lowerMessage.includes('green lane')) {
-      return "🛣️ Green Lane is our revolutionary eco-smart navigation system! It analyzes traffic patterns, vehicle emissions, and route efficiency to suggest the most sustainable paths. You'll get real-time carbon footprint tracking, alternative transport suggestions, and even find eco-friendly stops along your route. It's like having a personal environmental consultant for every journey!"
-    } else if (lowerMessage.includes('local harvest')) {
-      return "🌾 Local Harvest connects you directly with local farmers and sustainable food producers! Through our interactive map, you can discover seasonal produce, schedule direct pickups, and even get community recipes. It's farm-to-table made simple, supporting your local economy while ensuring the freshest, most nutritious food for your family."
-    } else if (lowerMessage.includes('air buddy')) {
-      return '💨 Air Buddy is your personal air quality guardian! It provides hyper-local air quality monitoring with real-time AQI alerts, personalized outdoor activity recommendations, and even tracks pollen levels. Plus, we give you indoor air quality tips and suggest the best plants to purify your home environment.'
-    } else if (lowerMessage.includes('wasteless')) {
-      return "♻️ WasteLess transforms how you think about waste! Our intelligent tracking system categorizes your waste, provides recycling guidance, and connects you with local composting programs. You'll get personalized tips for sustainable alternatives and can join zero-waste challenges with our community."
-    } else if (
-      lowerMessage.includes('features') ||
-      lowerMessage.includes('what can')
-    ) {
-      return '✨ VerdiGo offers four powerful eco-tools: Green Lane for sustainable navigation, Local Harvest for farm-to-table connections, Air Buddy for air quality monitoring, and WasteLess for smart waste management. Each tool is designed to make sustainable living easier and more rewarding. Which one interests you most?'
-    } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-      return "🌟 Hello! Welcome to VerdiGo's eco-community! I'm excited to help you discover how our platform can make sustainable living effortless and enjoyable. Feel free to ask me about any of our features, upload an image for AI analysis, or let me know what environmental challenges you're facing!"
-    } else if (
-      lowerMessage.includes('price') ||
-      lowerMessage.includes('cost')
-    ) {
-      return '💚 Great question! VerdiGo believes sustainability should be accessible to everyone. We offer flexible pricing plans to suit different needs. Sign up to explore our features and find the perfect plan for your eco-journey!'
-    } else {
-      return "🌱 That's a wonderful question! I'm here to help you make the most of VerdiGo's eco-features. Whether you're curious about reducing your carbon footprint, finding local sustainable options, or tracking your environmental impact, I've got you covered. You can also upload images for AI analysis! What interests you most?"
+      return "🛣️ **Green Lane** is our eco-smart navigation system! It finds the most environmentally friendly routes, tracks your carbon savings, and suggests sustainable transport options. Perfect for reducing your travel footprint while getting where you need to go!"
+    }
+
+    if (lowerMessage.includes('local harvest')) {
+      return "🌾 **Local Harvest** connects you with local farmers and fresh produce! Discover seasonal fruits and vegetables near you, support your community, and enjoy farm-to-table freshness. It's good for you and the planet!"
+    }
+
+    if (lowerMessage.includes('air buddy')) {
+      return "💨 **Air Buddy** monitors air quality in real-time! Get health recommendations, check pollution levels, and plan your outdoor activities safely. Breathe easy knowing you're informed about your environment!"
+    }
+
+    if (lowerMessage.includes('wasteless')) {
+      return "♻️ **WasteLess** helps you manage waste smartly! Get recycling tips, learn about proper disposal, and discover ways to reduce waste. Turn your garbage into a force for good!"
+    }
+
+    if (lowerMessage.includes('carbon') && (lowerMessage.includes('calculator') || lowerMessage.includes('footprint'))) {
+      return "🧮 **Carbon Footprint Calculator** tracks your environmental impact! Monitor your emissions from travel, energy use, and daily activities. See your progress and get personalized tips to reduce your footprint!"
+    }
+
+    // General features question
+    if (lowerMessage.includes('features') || lowerMessage.includes('what can') || lowerMessage.includes('what do')) {
+      return "✨ **VerdiGo's Eco-Tools:**\n\n🛣️ **Green Lane** - Smart eco-navigation\n🌾 **Local Harvest** - Connect with local farms\n💨 **Air Buddy** - Air quality monitoring\n♻️ **WasteLess** - Smart waste management\n🧮 **Carbon Calculator** - Track your impact\n\nWhich one interests you most?"
+    }
+
+    // Sustainability topics
+    if (lowerMessage.includes('sustainability') || lowerMessage.includes('sustainable') || lowerMessage.includes('environment')) {
+      const sustainabilityTips = [
+        "🌱 **Sustainability** means meeting today's needs without compromising tomorrow's! Key areas: energy efficiency, sustainable transport, waste reduction, and supporting local businesses.",
+        "🌍 **Environmental tips**: Use renewable energy, choose eco-friendly products, reduce plastic use, and support sustainable brands. Every small action counts!",
+        "♻️ **Sustainable living**: Start with simple changes like reusable bags, energy-efficient appliances, and buying local produce. Build from there!"
+      ]
+      return sustainabilityTips[Math.floor(Math.random() * sustainabilityTips.length)]
+    }
+
+    // Climate topics
+    if (lowerMessage.includes('climate') || lowerMessage.includes('global warming') || lowerMessage.includes('greenhouse')) {
+      return "🌍 **Climate Action Ideas:**\n\n• Use public transport or bike\n• Switch to renewable energy\n• Reduce meat consumption\n• Buy local, seasonal food\n• Minimize waste and recycle\n• Support eco-friendly businesses\n\nSmall changes make a big difference!"
+    }
+
+    // Recycling and waste
+    if (lowerMessage.includes('recycle') || lowerMessage.includes('waste') || lowerMessage.includes('trash')) {
+      return "♻️ **Smart Waste Tips:**\n\n🔄 **Reduce**: Buy less, choose quality items\n🔄 **Reuse**: Get creative with repurposing\n🔄 **Recycle**: Know your local guidelines\n🌱 **Compost**: Turn organic waste into gold\n🚫 **Refuse**: Say no to single-use plastics"
+    }
+
+    // Energy topics
+    if (lowerMessage.includes('energy') || lowerMessage.includes('electricity') || lowerMessage.includes('solar')) {
+      return "⚡ **Energy Saving Tips:**\n\n• Switch to LED bulbs\n• Unplug devices when not in use\n• Use programmable thermostats\n• Consider solar panels\n• Insulate your home properly\n• Choose energy-efficient appliances\n\nSave money while saving the planet!"
+    }
+
+    // Transportation
+    if (lowerMessage.includes('transport') || lowerMessage.includes('car') || lowerMessage.includes('bike') || lowerMessage.includes('travel')) {
+      return "🚗 **Eco-Friendly Transport:**\n\n🚶 **Walk or bike** for short trips\n🚌 **Public transport** for longer journeys\n🚗 **Carpool** when driving is necessary\n⚡ **Electric vehicles** for the future\n🏠 **Work from home** when possible\n\nOur Green Lane feature can help optimize your routes!"
+    }
+
+    // Food and diet
+    if (lowerMessage.includes('food') || lowerMessage.includes('diet') || lowerMessage.includes('eat') || lowerMessage.includes('meat')) {
+      return "🥗 **Sustainable Eating:**\n\n🌱 **Plant-based meals** reduce carbon footprint\n🏪 **Local & seasonal** supports farmers\n🌾 **Organic** when possible\n📦 **Minimal packaging** reduces waste\n🍽️ **Meal planning** prevents food waste\n\nTry our Local Harvest feature to find fresh, local produce!"
+    }
+
+    // Water conservation
+    if (lowerMessage.includes('water') || lowerMessage.includes('conservation') || lowerMessage.includes('save water')) {
+      return "💧 **Water Conservation Tips:**\n\n🚿 Take shorter showers\n🔧 Fix leaks promptly\n🌧️ Collect rainwater for gardens\n🌱 Choose drought-resistant plants\n🍽️ Run full loads in dishwasher\n⏰ Use timers for watering\n\nEvery drop counts!"
+    }
+
+    // Tips and advice
+    if (lowerMessage.includes('tip') || lowerMessage.includes('advice') || lowerMessage.includes('help') || lowerMessage.includes('how')) {
+      const tips = [
+        "💡 **Quick Tip**: Replace one car trip per week with walking or biking. You'll save money, get exercise, and reduce emissions!",
+        "🌟 **Pro Tip**: Start a small herb garden on your windowsill. Fresh herbs, zero packaging, and they purify your air too!",
+        "♻️ **Eco Hack**: Use glass jars for food storage instead of plastic containers. They last longer and are completely recyclable!",
+        "🌱 **Green Tip**: Bring your own cup to coffee shops. Many offer discounts, and you'll avoid single-use cups!",
+        "💚 **Simple Switch**: Use a bamboo toothbrush instead of plastic. Small change, big impact over time!"
+      ]
+      return tips[Math.floor(Math.random() * tips.length)]
+    }
+
+    // Thanks and goodbye
+    if (lowerMessage.includes('thank') || lowerMessage.includes('thanks') || lowerMessage.includes('appreciate')) {
+      const thanks = [
+        "🌟 You're so welcome! Together we can make a real difference for our planet!",
+        "💚 Happy to help! Keep up the great work on your sustainability journey!",
+        "🌱 My pleasure! Every eco-friendly choice you make matters!"
+      ]
+      return thanks[Math.floor(Math.random() * thanks.length)]
+    }
+
+    if (lowerMessage.includes('bye') || lowerMessage.includes('goodbye') || lowerMessage.includes('see you')) {
+      const goodbyes = [
+        "👋 Goodbye! Keep making those green choices - the planet thanks you!",
+        "🌍 See you later! Remember, every day is a chance to live more sustainably!",
+        "✨ Take care! Thanks for being an eco-warrior!"
+      ]
+      return goodbyes[Math.floor(Math.random() * goodbyes.length)]
+    }
+
+    // Questions about the bot
+    if (lowerMessage.includes('who are you') || lowerMessage.includes('what are you') || lowerMessage.includes('about you')) {
+      return "🤖 I'm EcoBot, your friendly sustainability assistant! I'm here to help you learn about eco-friendly living, VerdiGo's features, and how to make a positive impact on our planet. I love talking about all things green! 🌱"
+    }
+
+    // Random conversation
+    if (lowerMessage.includes('how are you') || lowerMessage.includes('how\'s it going')) {
+      const responses = [
+        "🌟 I'm doing great! Always excited to help people live more sustainably!",
+        "💚 Fantastic! Every conversation about sustainability makes my day!",
+        "🌱 Wonderful! I love helping people discover eco-friendly solutions!"
+      ]
+      return responses[Math.floor(Math.random() * responses.length)]
+    }
+
+    // Default responses for unrecognized input
+    const defaultResponses = [
+      "🤔 That's interesting! While I'm still learning, I'd love to help you with sustainability questions or tell you about VerdiGo's eco-features!",
+      "🌱 I'm not sure about that specific topic, but I can help with environmental tips, VerdiGo features, or sustainable living advice!",
+      "💡 Hmm, let me think... How about asking me about Green Lane, Local Harvest, Air Buddy, or any sustainability topics?",
+      "🌟 That's a great question! I specialize in sustainability and VerdiGo's eco-tools. What would you like to know about living green?",
+      "♻️ I'd love to help! Try asking me about recycling tips, sustainable living, or any of VerdiGo's amazing features!"
+    ]
+
+    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)]
+  }
+
+  // Handle Enter key press
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !isTyping) {
+      handleSendMessage()
     }
   }
 
@@ -296,9 +229,9 @@ const Chatbot = () => {
               <Leaf className='w-6 h-6' />
             </div>
             <div>
-              <h3 className='font-bold text-lg'>EcoBot AI</h3>
+              <h3 className='font-bold text-lg'>EcoBot</h3>
               <p className='text-emerald-100 text-sm'>
-                Image Analysis + ChatGPT
+                Your Green Assistant
               </p>
             </div>
           </div>
@@ -319,36 +252,21 @@ const Chatbot = () => {
                       : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white'
                   }`}
                 >
-                  {/* Show image if uploaded */}
-                  {msg.type === 'image' && msg.imageUrl && (
-                    <div className='mb-3'>
-                      <img
-                        src={msg.imageUrl}
-                        alt='Uploaded'
-                        className='w-full rounded-lg max-h-40 object-cover'
-                      />
-                      <p className='text-xs mt-1 opacity-75'>{msg.fileName}</p>
-                    </div>
-                  )}
-
                   <p className='text-sm leading-relaxed whitespace-pre-line'>
                     {msg.message}
                   </p>
-
-                  {/* Show analysis indicator */}
-                  {msg.type === 'analysis' && (
-                    <div className='mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-200'>
-                      <p className='text-xs text-emerald-700 font-medium'>
-                        🤖 AI Analysis Complete
-                      </p>
-                    </div>
-                  )}
+                  <p className='text-xs mt-2 opacity-60'>
+                    {msg.timestamp.toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
                 </div>
               </div>
             ))}
 
-            {/* Typing indicators */}
-            {(isTyping || isAnalyzing) && (
+            {/* Typing indicator */}
+            {isTyping && (
               <div className='flex justify-start'>
                 <div className='bg-white p-4 rounded-2xl shadow-sm border border-emerald-100'>
                   <div className='flex items-center space-x-2'>
@@ -364,54 +282,53 @@ const Chatbot = () => {
                       ></div>
                     </div>
                     <span className='text-xs text-emerald-600'>
-                      {isAnalyzing ? '🔍 Analyzing image...' : '💭 Thinking...'}
+                      🤖 EcoBot is thinking...
                     </span>
                   </div>
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input Area */}
           <div className='p-4 border-t border-emerald-100 bg-white'>
-            {/* Upload button */}
-            <div className='flex space-x-2 mb-3'>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isAnalyzing}
-                className='flex items-center space-x-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-colors text-sm disabled:opacity-50'
-              >
-                <Camera className='w-4 h-4' />
-                <span>Upload Image</span>
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type='file'
-                accept='image/*'
-                onChange={handleImageUpload}
-                className='hidden'
-              />
-            </div>
-
-            {/* Text input */}
             <div className='flex space-x-3'>
               <input
                 type='text'
                 value={inputMessage}
                 onChange={e => setInputMessage(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
-                placeholder='Ask about eco-features or upload an image...'
+                onKeyPress={handleKeyPress}
+                placeholder='Ask me about sustainability or VerdiGo...'
                 className='flex-1 p-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-emerald-50/50'
-                disabled={isTyping || isAnalyzing}
+                disabled={isTyping}
               />
               <button
                 onClick={handleSendMessage}
-                disabled={isTyping || isAnalyzing || !inputMessage.trim()}
-                className='bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white p-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50'
+                disabled={isTyping || !inputMessage.trim()}
+                className='bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white p-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 <Send className='w-4 h-4' />
               </button>
+            </div>
+            
+            {/* Helpful prompts */}
+            <div className='mt-3 flex flex-wrap gap-2'>
+              {[
+                'Green Lane',
+                'Sustainability tips',
+                'Energy saving',
+                'Recycling help'
+              ].map((prompt, index) => (
+                <button
+                  key={index}
+                  onClick={() => setInputMessage(prompt)}
+                  disabled={isTyping}
+                  className='text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1 rounded-full transition-colors disabled:opacity-50'
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -420,4 +337,4 @@ const Chatbot = () => {
   )
 }
 
-export default Chatbot
+export default Chatbot;
